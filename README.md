@@ -1,92 +1,165 @@
-# Cloud_Native_Monitoring on K8s
+Cloud Native Resource Monitoring Python App on K8s!
 
+1. Create Monitoring Application in Python using Flask and psutil.
+2. Run a Python App locally.
+3. Containerize Python application.
+       Creating Dockerfile
+       Building DockerImage
+       Running Docker Container
+       Docker Commands
+4. Create ECR repository using Python Boto3 and pushing Docker Image to ECR
+5. Create EKS cluster and Nodegroups.
+6. Create K8s Deployments and Services using Python!
 
+Prerequisites:
+AWS Account, CLI, Python3 installed, Docker and Kubectl installed, Vscode.
 
-## Getting started
+Part-1: Deploying the Flask application locally
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Step 1: Clone the code
+Clone the code from the repository:
+git clone <repository_url>
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Step 2: Install dependencies
+The application uses the psutil and Flask, Plotly, boto3 libraries. Install them using pip:
+pip3 install -r requirements.txt
 
-## Add your files
+Step 3: Run the application
+To run the application, navigate to the root directory of the project and execute the following command:
+python3 app.python3
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+This will start the Flask server on localhost:5000. Navigate to http://localhost:5000/ on your browser to access the application.
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/lakshmi1908/cloud_native_monitoring-on-k8s.git
-git branch -M main
-git push -uf origin main
-```
+Part 2: Dockerizing the Flask application
 
-## Integrate with your tools
+Step 1: Create a Dockerfile
+Create a Dockerfile in the root directory of the project with the following contents:
 
-- [ ] [Set up project integrations](https://gitlab.com/lakshmi1908/cloud_native_monitoring-on-k8s/-/settings/integrations)
+# Use the official Python image as the base image
+FROM python:3.9-slim-buster
 
-## Collaborate with your team
+# Set the working directory in the container
+WORKDIR /app
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+# Copy the requirements file to the working directory
+COPY requirements.txt .
 
-## Test and Deploy
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-Use the built-in continuous integration in GitLab.
+# Copy the application code to the working directory
+COPY . .
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+# Set the environment variables for the Flask app
+ENV FLASK_RUN_HOST=0.0.0.0
 
-***
+# Expose the port on which the Flask app will run
+EXPOSE 5000
 
-# Editing this README
+# Start the Flask app when the container is run
+CMD ["flask", "run"]
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Step 2: Build the Docker image
+To build the Docker image, execute the following command:
+docker build -t <image_name> .
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Step 3: Run the Docker container
+To run the Docker container, execute the following command:
+docker run -p 5000:5000 <image_name>
 
-## Name
-Choose a self-explaining name for your project.
+This will start the Flask server in a Docker container on localhost:5000. Navigate to http://localhost:5000/ on your browser to access the application.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+Part 3: Pushing the Docker image to ECR
+Step 1: Create an ECR repository
+Create an ECR repository using Python:
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+import boto3
+# Create an ECR client
+ecr_client = boto3.client('ecr')
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+# Create a new ECR repository
+repository_name = 'my-ecr-repo'
+response = ecr_client.create_repository(repositoryName=repository_name)
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+# Print the repository URI
+repository_uri = response['repository']['repositoryUri']
+print(repository_uri)
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Step 2: Push the Docker image to ECR
+Push the Docker image to ECR using the push commands on the console:
+docker push <ecr_repo_uri>:<tag>
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Part 4: Creating an EKS cluster and deploying the app using Python
+Step 1: Create an EKS cluster
+Create an EKS cluster and add node group
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Step 2: Create a node group
+Create a node group in the EKS cluster.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Step 3: Create deployment and service.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+from kubernetes import client, config
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+# Load Kubernetes configuration
+config.load_kube_config()
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+# Create a Kubernetes API client
+api_client = client.ApiClient()
 
-## License
-For open source projects, say how it is licensed.
+# Define the deployment
+deployment = client.V1Deployment(
+    metadata=client.V1ObjectMeta(name="my-flask-app"),
+    spec=client.V1DeploymentSpec(
+        replicas=1,
+        selector=client.V1LabelSelector(
+            match_labels={"app": "my-flask-app"}
+        ),
+        template=client.V1PodTemplateSpec(
+            metadata=client.V1ObjectMeta(
+                labels={"app": "my-flask-app"}
+            ),
+            spec=client.V1PodSpec(
+                containers=[
+                    client.V1Container(
+                        name="my-flask-container",
+                        image="568373317874.dkr.ecr.us-east-1.amazonaws.com/my-cloud-native-repo:latest",
+                        ports=[client.V1ContainerPort(container_port=5000)]
+                    )
+                ]
+            )
+        )
+    )
+)
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+# Create the deployment
+api_instance = client.AppsV1Api(api_client)
+api_instance.create_namespaced_deployment(
+    namespace="default",
+    body=deployment
+)
+
+# Define the service
+service = client.V1Service(
+    metadata=client.V1ObjectMeta(name="my-flask-service"),
+    spec=client.V1ServiceSpec(
+        selector={"app": "my-flask-app"},
+        ports=[client.V1ServicePort(port=5000)]
+    )
+)
+
+# Create the service
+api_instance = client.CoreV1Api(api_client)
+api_instance.create_namespaced_service(
+    namespace="default",
+    body=service
+)
+make sure to edit the name of the image on line 124 with your image Uri.
+Once you run this file by running "python3 eks.py" deployment and service will be created.
+Check by running following commands:
+
+kubectl get deployment -n default (check deployments)
+kubectl get service -n default (check service)
+kubectl get pods -n default (to check the pods)
+
+Once your pod is up and running, run the port-forward to expose the service
+
+kubectl port-forward service/<service_name> 5000:5000
