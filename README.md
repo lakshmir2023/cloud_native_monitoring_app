@@ -1,4 +1,5 @@
 Cloud Native Resource Monitoring Python App on K8s!
+![Uploading image.png…]()
 
 1. Create Monitoring Application in Python using Flask and psutil.
 2. Run a Python App locally.
